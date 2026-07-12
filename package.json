@@ -5,6 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
+    "postinstall": "npm run build",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
     "migrate": "node dist/scripts/migrate.js",
