@@ -77,8 +77,17 @@ export async function getValidToken() {
 
 // If run directly from CLI
 if (require.main === module) {
-  getValidToken().then(() => {
+  console.log('Local developer helper used to authorize Google Calendar once and obtain the refresh token required for deployment.');
+  getValidToken().then((client) => {
+    console.log('\n--- SUCCESS ---');
     console.log('Google Calendar authentication successful.');
+    if (client.credentials.refresh_token) {
+      console.log('\nPlace the following refresh token into your GOOGLE_REFRESH_TOKEN environment variable:');
+      console.log(client.credentials.refresh_token);
+      console.log('\nYou must also set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.');
+    } else {
+      console.log('No refresh token received. You may need to revoke the app and try again to force a new consent screen.');
+    }
     process.exit(0);
   }).catch(err => {
     console.error('Error during Google Auth:', err);

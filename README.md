@@ -64,15 +64,22 @@ NODE_ENV=development
 DATABASE_URL=postgresql://postgres.xxx:password@xxx.supabase.com:6543/postgres
 
 HUBSPOT_ACCESS_TOKEN=your_token
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REFRESH_TOKEN=your_refresh_token
 GOOGLE_CALENDAR_ID=your_calendar_id@group.calendar.google.com
 SQUARE_ACCESS_TOKEN=your_token
 SQUARE_LOCATION_ID=your_location
-SQUARE_ENVIRONMENT=sandbox
 ```
 
 ## 16. Google Local OAuth Setup
-Run `npx tsx src/scripts/google-auth.ts`.
-This will spin up a local server. Authenticate in the browser. It will securely persist `token.json` in the project root, enabling automatic background token refreshes for the `GoogleCalendarAdapter`.
+The production application exclusively uses environment variables (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`) and does not read files from disk.
+
+To obtain the `GOOGLE_REFRESH_TOKEN` for deployment, you can use the local developer helper:
+1. Download your desktop OAuth `credentials.json` from Google Cloud Console into the project root.
+2. Run `npx tsx src/scripts/google-auth.ts`.
+3. Authenticate in the browser. The script will print the exact refresh token you need to place in your `.env` or Render dashboard.
+*Note: This helper is for local setup only. The production runtime requires the environment variables.*
 
 ## 17. Database Migration Commands
 Execute `npx tsx src/scripts/migrate.ts` to automatically bootstrap the Supabase Postgres schema.

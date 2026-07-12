@@ -41,29 +41,26 @@ function loadConfig(): AppConfig {
   // HubSpot: optional — sync will fail gracefully if not configured
   const hubspotAccessToken = optionalEnv('HUBSPOT_ACCESS_TOKEN');
 
-  let googleOAuthClient: OAuth2Client | null = null;
-  const credentialsPath = path.join(process.cwd(), 'credentials.json');
-  const tokenPath = path.join(process.cwd(), 'token.json');
+  const googleClientId = optionalEnv('GOOGLE_CLIENT_ID');
+  const googleClientSecret = optionalEnv('GOOGLE_CLIENT_SECRET');
+  const googleRefreshToken = optionalEnv('GOOGLE_REFRESH_TOKEN');
+  const configuredGoogleCalendarId = optionalEnv('GOOGLE_CALENDAR_ID');
 
-  if (fs.existsSync(credentialsPath) && fs.existsSync(tokenPath)) {
-    try {
-      const credentials = JSON.parse(fs.readFileSync(credentialsPath, 'utf-8'));
-      const keys = credentials.installed || credentials.web;
-      
-      googleOAuthClient = new OAuth2Client(
-        keys.client_id,
-        keys.client_secret,
-        'http://127.0.0.1:3000'
-      );
-      
-      const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf-8'));
-      googleOAuthClient.setCredentials(tokenData);
-    } catch (err) {
-      console.warn('Failed to initialize Google OAuth Client', err);
-    }
+  const googleAuthVars = [googleClientId, googleClientSecret, googleRefreshToken, configuredGoogleCalendarId];
+  const providedCount = googleAuthVars.filter(v => v !== null).length;
+
+  if (providedCount > 0 && providedCount < 4) {
+    throw new Error('Google Calendar configuration is incomplete. You must provide all four variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_CALENDAR_ID) or none at all.');
   }
 
-  const googleCalendarId = optionalEnv('GOOGLE_CALENDAR_ID') || 'primary';
+  let googleOAuthClient: OAuth2Client | null = null;
+  let googleCalendarId = 'primary';
+
+  if (providedCount === 4) {
+    googleOAuthClient = new OAuth2Client(googleClientId!, googleClientSecret!, 'http://127.0.0.1:3000');
+    googleOAuthClient.setCredentials({ refresh_token: googleRefreshToken! });
+    googleCalendarId = configuredGoogleCalendarId!;
+  }
 
   return {
     port,
